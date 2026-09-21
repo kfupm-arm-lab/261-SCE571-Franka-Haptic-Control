@@ -343,7 +343,7 @@ Run and tuned as described in [Section 6 Run the Final Controlled Demo](#6-run-t
 |---|---|---|---|
 | 1 | Arm controller working -- DualSense driving the Franka Panda with contact rumble | [arm_controller_working.mp4](https://kfupmedusa-my.sharepoint.com/:v:/g/personal/ramy_rashad_kfupm_edu_sa/IQCXPp53oZy2TKSjceuDKeSdAXQIqTMcuwvinx-wxCXVWB8?e=fuer76) | Click the link to play or download. On the SharePoint page use `...` -> **Download** if playback is blocked. |
 | 2 | Arm working (screen capture) -- overhead and wrist camera view | [arm_working_screen.mp4](https://kfupmedusa-my.sharepoint.com/:v:/g/personal/ramy_rashad_kfupm_edu_sa/IQDS_nuB4n-DTrfNhFSYLdpeAUo_cREFnUXHQFdLKNYEapU?e=0fraNd) | Click the link to play or download. |
-| 3 | Franka grasp preview | [franka.gif](https://kfupmedusa-my.sharepoint.com/:i:/g/personal/ramy_rashad_kfupm_edu_sa/IQCudC8TCo3iQ4S_tbl0A-o0AWuhIIDkQR1TgcRxBgJFpXU?e=VFFNl9) | Preview below (requires sign-in). For reliable offline viewing, keep a local copy at `doc/franka.gif` and embed with `![Franka grasp](doc/franka.gif)`:<br>![Franka grasp](https://kfupmedusa-my.sharepoint.com/:i:/g/personal/ramy_rashad_kfupm_edu_sa/IQCudC8TCo3iQ4S_tbl0A-o0AWuhIIDkQR1TgcRxBgJFpXU?e=VFFNl9) |
+| 3 | Franka grasp preview | [franka.gif](https://kfupmedusa-my.sharepoint.com/:i:/g/personal/ramy_rashad_kfupm_edu_sa/IQCudC8TCo3iQ4S_tbl0A-o0AWuhIIDkQR1TgcRxBgJFpXU?e=VFFNl9) | Click the link to view or download. |
 
 > **Tip:** To ensure the demos remain visible on GitHub, consider adding `doc/franka.gif` (and optionally thumbnails for the mp4s) to the repository. A local copy avoids SharePoint permission/expiry issues.
 
