@@ -300,13 +300,19 @@ python -c "import numpy, cv2, PIL, pygame; print('NumPy:', numpy.__version__); p
 
 Standalone PS5 DualSense diagnostic program. It can list controllers, print live axis/button/D-pad events, read normalized R2 force, test the logical R2 lock, and test rumble. The final controlled bridge imports its reusable controller interface.
 
-### `pybullet_vision_env_controlled.py`
+Tested as described in [Section 3 Controller Setup and Testing](#3-controller-setup-and-testing) — see [3.1 Connect and configure](#31-connect-and-configure-the-ps5-dualsense), [3.2 Test before the robot](#32-test-the-controller-before-the-robot), and the controller diagnostics in [Section 10 Quick Command Reference](#10-quick-command-reference). Controller-related troubleshooting is in [Section 9 Troubleshooting](#9-troubleshooting).
 
-Controlled environment. It contains the table mounting, controller-to-IK movement, gripper commands, and hand/finger contact checks used by the final demo.
+### `pybullet_vision_env_controlled.py` (internal — not run directly)
+
+Internal controlled-environment module. It implements the table mounting, controller-to-IK movement, gripper commands, and hand/finger contact checks used by the final demo. It is not invoked directly from the command line; `vision_bridge_controlled.py` imports `VisionEnv` from this file (`from pybullet_vision_env_controlled import VisionEnv` at `vision_bridge_controlled.py:12`).
+
+It is exercised indirectly through [Section 5 Run the Final Controlled Demo](#5-run-the-final-controlled-demo) (including safe mode, overhead/wrist cameras, and segmentation) and explained in [Section 6 How Movement and Feedback Work](#6-how-movement-and-feedback-work). Environment-related issues (mounting, collisions, OpenGL) are covered in [Section 9 Troubleshooting](#9-troubleshooting).
 
 ### `vision_bridge_controlled.py`
 
 Final controller and vision runner. It imports the controlled environment, reads the DualSense, commands the robot, checks contact/grasp state, triggers rumble, and optionally runs the camera pipeline.
+
+Run and tuned as described in [Section 5 Run the Final Controlled Demo](#5-run-the-final-controlled-demo), [Section 7 Speed and Control Tuning](#7-speed-and-control-tuning), and [Section 8 Rumble Intensity and Timing](#8-rumble-intensity-and-timing). See [Section 10 Quick Command Reference](#10-quick-command-reference) for the canonical demo commands and [Section 9 Troubleshooting](#9-troubleshooting) if the arm does not move or rumble fails.
 
 ---
 
