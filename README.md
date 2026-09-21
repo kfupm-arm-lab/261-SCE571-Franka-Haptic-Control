@@ -33,16 +33,17 @@ The simulation can run without a controller, but the `--controller` option requi
    - [Install dependencies](#18-install-dependencies)
    - [Verify the installation](#19-verify-the-installation)
 2. [File Overview](#2-file-overview)
-3. [Controller Setup and Testing](#3-controller-setup-and-testing)
-   - [Connect and configure the PS5 DualSense](#31-connect-and-configure-the-ps5-dualsense)
-   - [Test the controller before the robot](#32-test-the-controller-before-the-robot)
-4. [PS5 DualSense Control Mapping](#4-ps5-dualsense-control-mapping)
-5. [Run the Final Controlled Demo](#5-run-the-final-controlled-demo)
-6. [How Movement and Feedback Work](#6-how-movement-and-feedback-work)
-7. [Speed and Control Tuning](#7-speed-and-control-tuning)
-8. [Rumble Intensity and Timing](#8-rumble-intensity-and-timing)
-9. [Troubleshooting](#9-troubleshooting)
-10. [Quick Command Reference](#10-quick-command-reference)
+3. [Demo Videos](#3-demo-videos)
+4. [Controller Setup and Testing](#4-controller-setup-and-testing)
+   - [Connect and configure the PS5 DualSense](#41-connect-and-configure-the-ps5-dualsense)
+   - [Test the controller before the robot](#42-test-the-controller-before-the-robot)
+5. [PS5 DualSense Control Mapping](#5-ps5-dualsense-control-mapping)
+6. [Run the Final Controlled Demo](#6-run-the-final-controlled-demo)
+7. [How Movement and Feedback Work](#7-how-movement-and-feedback-work)
+8. [Speed and Control Tuning](#8-speed-and-control-tuning)
+9. [Rumble Intensity and Timing](#9-rumble-intensity-and-timing)
+10. [Troubleshooting](#10-troubleshooting)
+11. [Quick Command Reference](#11-quick-command-reference)
 
 ---
 
@@ -318,26 +319,39 @@ python -c "import numpy, cv2, PIL, pygame; print('NumPy:', numpy.__version__); p
 
 Standalone PS5 DualSense diagnostic program. It can list controllers, print live axis/button/D-pad events, read normalized R2 force, test the logical R2 lock, and test rumble. The final controlled bridge imports its reusable controller interface.
 
-Tested as described in [Section 3 Controller Setup and Testing](#3-controller-setup-and-testing) — see [3.1 Connect and configure](#31-connect-and-configure-the-ps5-dualsense), [3.2 Test before the robot](#32-test-the-controller-before-the-robot), and the controller diagnostics in [Section 10 Quick Command Reference](#10-quick-command-reference). Controller-related troubleshooting is in [Section 9 Troubleshooting](#9-troubleshooting).
+Tested as described in [Section 4 Controller Setup and Testing](#4-controller-setup-and-testing) — see [4.1 Connect and configure](#41-connect-and-configure-the-ps5-dualsense), [4.2 Test before the robot](#42-test-the-controller-before-the-robot), and the controller diagnostics in [Section 11 Quick Command Reference](#11-quick-command-reference). Controller-related troubleshooting is in [Section 10 Troubleshooting](#10-troubleshooting).
 
 ### `pybullet_vision_env_controlled.py` (internal — not run directly)
 
 Internal controlled-environment module. It implements the table mounting, controller-to-IK movement, gripper commands, and hand/finger contact checks used by the final demo. It is not invoked directly from the command line; `vision_bridge_controlled.py` imports `VisionEnv` from this file (`from pybullet_vision_env_controlled import VisionEnv` at `vision_bridge_controlled.py:12`).
 
-It is exercised indirectly through [Section 5 Run the Final Controlled Demo](#5-run-the-final-controlled-demo) (including safe mode, overhead/wrist cameras, and segmentation) and explained in [Section 6 How Movement and Feedback Work](#6-how-movement-and-feedback-work). Environment-related issues (mounting, collisions, OpenGL) are covered in [Section 9 Troubleshooting](#9-troubleshooting).
+It is exercised indirectly through [Section 6 Run the Final Controlled Demo](#6-run-the-final-controlled-demo) (including safe mode, overhead/wrist cameras, and segmentation) and explained in [Section 7 How Movement and Feedback Work](#7-how-movement-and-feedback-work). Environment-related issues (mounting, collisions, OpenGL) are covered in [Section 10 Troubleshooting](#10-troubleshooting).
 
 ### `vision_bridge_controlled.py`
 
 Final controller and vision runner. It imports the controlled environment, reads the DualSense, commands the robot, checks contact/grasp state, triggers rumble, and optionally runs the camera pipeline.
 
-Run and tuned as described in [Section 5 Run the Final Controlled Demo](#5-run-the-final-controlled-demo), [Section 7 Speed and Control Tuning](#7-speed-and-control-tuning), and [Section 8 Rumble Intensity and Timing](#8-rumble-intensity-and-timing). See [Section 10 Quick Command Reference](#10-quick-command-reference) for the canonical demo commands and [Section 9 Troubleshooting](#9-troubleshooting) if the arm does not move or rumble fails.
+Run and tuned as described in [Section 6 Run the Final Controlled Demo](#6-run-the-final-controlled-demo), [Section 8 Speed and Control Tuning](#8-speed-and-control-tuning), and [Section 9 Rumble Intensity and Timing](#9-rumble-intensity-and-timing). See [Section 11 Quick Command Reference](#11-quick-command-reference) for the canonical demo commands and [Section 10 Troubleshooting](#10-troubleshooting) if the arm does not move or rumble fails.
 
 ---
 
+## 3. Demo Videos
 
-## 3. Controller Setup and Testing
+> OneDrive / SharePoint links require KFUPM sign-in. Use **Download** in the SharePoint viewer if the video does not play inline. If a link asks for permission, request access from `ramy.rashad@kfupm.edu.sa`.
 
-### 3.1 Connect and configure the PS5 DualSense
+| # | Demo | Link (OneDrive / SharePoint) | Preview |
+|---|---|---|---|
+| 1 | Arm controller working -- DualSense driving the Franka Panda with contact rumble | [arm_controller_working.mp4](https://kfupmedusa-my.sharepoint.com/:v:/g/personal/ramy_rashad_kfupm_edu_sa/IQCXPp53oZy2TKSjceuDKeSdAXQIqTMcuwvinx-wxCXVWB8?e=fuer76) | Click the link to play or download. On the SharePoint page use `...` -> **Download** if playback is blocked. |
+| 2 | Arm working (screen capture) -- overhead and wrist camera view | [arm_working_screen.mp4](https://kfupmedusa-my.sharepoint.com/:v:/g/personal/ramy_rashad_kfupm_edu_sa/IQDS_nuB4n-DTrfNhFSYLdpeAUo_cREFnUXHQFdLKNYEapU?e=0fraNd) | Click the link to play or download. |
+| 3 | Franka grasp preview | [franka.gif](https://kfupmedusa-my.sharepoint.com/:i:/g/personal/ramy_rashad_kfupm_edu_sa/IQCudC8TCo3iQ4S_tbl0A-o0AWuhIIDkQR1TgcRxBgJFpXU?e=VFFNl9) | Preview below (requires sign-in). For reliable offline viewing, keep a local copy at `doc/franka.gif` and embed with `![Franka grasp](doc/franka.gif)`:<br>![Franka grasp](https://kfupmedusa-my.sharepoint.com/:i:/g/personal/ramy_rashad_kfupm_edu_sa/IQCudC8TCo3iQ4S_tbl0A-o0AWuhIIDkQR1TgcRxBgJFpXU?e=VFFNl9) |
+
+> **Tip:** To ensure the demos remain visible on GitHub, consider adding `doc/franka.gif` (and optionally thumbnails for the mp4s) to the repository. A local copy avoids SharePoint permission/expiry issues.
+
+---
+
+## 4. Controller Setup and Testing
+
+### 4.1 Connect and configure the PS5 DualSense
 
 1. Connect the DualSense by USB or pair it through Bluetooth.
 2. Turn on the controller and keep it connected while running the simulation.
@@ -347,13 +361,13 @@ If the controller is detected but rumble does not work, reconnect it by USB and 
 
 > **Note:** On some Windows USB configurations the DualSense may appear as an audio device. If rumble is silent, check that the device volume is not muted and that the correct output device is selected. This is an observed driver behavior that can affect haptic behavior in some setups -- it is not a universal requirement.
 
-### 3.2 Test the controller before the robot
+### 4.2 Test the controller before the robot
 
 The controller test is independent of PyBullet. It confirms that the operating system, Pygame, axes, buttons, and rumble are working before starting the robot.
 
 All commands in this section assume `franka-haptics` is active (`conda activate franka-haptics`).
 
-#### 3.2.1 List controllers and read axes / D-pad
+#### 4.2.1 List controllers and read axes / D-pad
 
 ##### List controllers
 
@@ -386,7 +400,7 @@ hat 0: (0, 1)
 
 Stop a test that runs indefinitely with `Ctrl+C`. When you press a button, it will show `DOWN` then `UP` when released. Small fluctuations in joystick readings near zero are normal.
 
-#### 3.2.2 Test rumble
+#### 4.2.2 Test rumble
 
 ##### Test startup rumble
 
@@ -416,7 +430,7 @@ python controller_test_ps5.py --rumble-test --rumble-on-button --rumble-strength
 
 Some DualSense driver configurations do not respond to the initial rumble command until the controller has received an input event. If startup rumble does not work, press a button once and test again. This behavior is controller/driver dependent; it does not necessarily mean the Python code failed.
 
-#### 3.2.3 R2 diagnostics
+#### 4.2.3 R2 diagnostics
 
 ##### R2 force reading
 
@@ -438,7 +452,7 @@ python controller_test_ps5.py --duration 10 --r2-lock --r2-threshold 0.5 --rumbl
 
 When R2 reaches 50%, the script reports `R2 LOCKED` and sends a maximum-strength vibration pulse. When the value drops below 50%, it reports `R2 UNLOCKED` and sends another pulse. This is a software state; it does not physically stop or harden the trigger.
 
-#### 3.2.4 Example output and options
+#### 4.2.4 Example output and options
 
 ##### Example output while running
 
@@ -489,13 +503,13 @@ This project currently uses Pygame/SDL for controller input and rumble. It does 
 
 ---
 
-## 4. PS5 DualSense Control Mapping
+## 5. PS5 DualSense Control Mapping
 
 The following is the standard mapping reported by `pygame` for a Wireless DualSense in the active environment.
 
-### 4.1 Standard PS5 DualSense inputs
+### 5.1 Standard PS5 DualSense inputs
 
-#### 4.1.1 Buttons
+#### 5.1.1 Buttons
 
 | Pygame input | PS5 control |
 | --- | --- |
@@ -515,7 +529,7 @@ The following is the standard mapping reported by `pygame` for a Wireless DualSe
 
 The mapping below matches the DualSense output observed with Pygame in the active environment. Always trust the live output from `controller_test_ps5.py` if a different driver reports different numbers.
 
-#### 4.1.2 D-pad
+#### 5.1.2 D-pad
 
 The D-pad is `hat 0`, with `(x, y)` values:
 
@@ -527,7 +541,7 @@ The D-pad is `hat 0`, with `(x, y)` values:
 | `hat 0: (1, 0)` | Right |
 | `hat 0: (0, 0)` | Released |
 
-#### 4.1.3 Axes
+#### 5.1.3 Axes
 
 Typical DualSense axis numbering is:
 
@@ -554,7 +568,7 @@ python controller_test_ps5.py --duration 10 --r2-lock --r2-threshold 0.5 --rumbl
 
 `R2 LOCKED` is printed at or above the threshold and `R2 UNLOCKED` when the value falls below it. This project currently uses Pygame/SDL and does not implement DualSense adaptive-trigger resistance, so this lock is a software state with haptic feedback only.
 
-### 4.2 Robot controls
+### 5.2 Robot controls
 
 | Controller input | Robot action |
 | --- | --- |
@@ -568,7 +582,7 @@ The bridge applies a deadzone so small stick drift does not move the robot.
 
 ---
 
-## 5. Run the Final Controlled Demo
+## 6. Run the Final Controlled Demo
 
 During the final demo:
 
@@ -582,9 +596,9 @@ During the final demo:
 
 The simulation is a control and vision prototype. The grasp detector is based on PyBullet contact links, so it confirms simultaneous finger contact rather than proving that the cube is physically lifted and retained under all dynamics.
 
-### 5.1 Final demonstration (recommended)
+### 6.1 Final demonstration (recommended)
 
-#### 5.1.1 Normal demo
+#### 6.1.1 Normal demo
 
 **Use this command for the normal final demonstration:**
 
@@ -594,13 +608,13 @@ python vision_bridge_controlled.py --gui --controller --control-speed 0.03 --use
 
 The command opens the PyBullet GUI, mounts the robot on the table, enables the DualSense, enables the overhead camera, and stops after `--steps 3000` control cycles. The default `--steps` value is `-1` (run until `Ctrl+C` or the window is closed), so `--steps 3000` is included explicitly where a finite run is desired.
 
-#### 5.1.2 Steps flag note
+#### 6.1.2 Steps flag note
 
 Stop the demo with `Ctrl+C` or close the simulation window.
 
-### 5.2 Variants
+### 6.2 Variants
 
-#### 5.2.1 Diagnostic run
+#### 6.2.1 Diagnostic run
 
 Use this when checking controller values or investigating movement:
 
@@ -610,7 +624,7 @@ python vision_bridge_controlled.py --gui --controller --debug-controller --use-o
 
 Every 30 cycles it prints the latest axis values. When a stick is moved, the corresponding axis should become significantly different from zero.
 
-#### 5.2.2 Run without the controller
+#### 6.2.2 Run without the controller
 
 The controlled bridge can also display the simulation without reading the DualSense:
 
@@ -620,13 +634,13 @@ python vision_bridge_controlled.py --gui --use-overhead --steps 1000
 
 Without `--controller`, the arm is not commanded by the joystick.
 
-#### 5.2.3 Both cameras
+#### 6.2.3 Both cameras
 
 ```bash
 python vision_bridge_controlled.py --gui --controller --use-overhead --use-wrist --steps 3000
 ```
 
-#### 5.2.4 Save annotated frames
+#### 6.2.4 Save annotated frames
 
 ```bash
 python vision_bridge_controlled.py --gui --controller --use-overhead --save output --steps 3000
@@ -634,7 +648,7 @@ python vision_bridge_controlled.py --gui --controller --use-overhead --save outp
 
 Frames are saved in the `output` directory using names such as `overhead_000000.png`.
 
-#### 5.2.5 Segmentation detector
+#### 6.2.5 Segmentation detector
 
 ```bash
 python vision_bridge_controlled.py --gui --controller --use-overhead --detector seg --steps 3000
@@ -642,7 +656,7 @@ python vision_bridge_controlled.py --gui --controller --use-overhead --detector 
 
 The segmentation detector groups rendered pixels by PyBullet body/link ID. It is a prototype detector for testing the RGB-D and segmentation pipeline, not a general object-recognition model.
 
-#### 5.2.6 Safe mode
+#### 6.2.6 Safe mode
 
 For slower computers or graphics-driver problems:
 
@@ -654,7 +668,7 @@ Safe mode uses a 320x240 overhead image and TinyRenderer. It is slower visually 
 
 ---
 
-## 6. How Movement and Feedback Work
+## 7. How Movement and Feedback Work
 
 The controlled bridge performs the following loop:
 
@@ -677,11 +691,11 @@ Contact feedback is event-based rather than continuous:
 
 ---
 
-## 7. Speed and Control Tuning
+## 8. Speed and Control Tuning
 
 The final bridge exposes two main speed-related options plus base placement.
 
-### 7.1 End-effector speed
+### 8.1 End-effector speed
 
 Default:
 
@@ -691,7 +705,7 @@ Default:
 
 This is the Cartesian target change applied per controller update, in meters.
 
-#### 7.1.1 Faster response
+#### 8.1.1 Faster response
 
 Increase it for faster stick response:
 
@@ -707,7 +721,7 @@ python vision_bridge_controlled.py --gui --controller --control-speed 0.03 --phy
 
 A conservative range to try is approximately `0.008` to `0.03`.
 
-#### 7.1.2 Slower / finer control
+#### 8.1.2 Slower / finer control
 
 If the arm becomes difficult to control, reduce it:
 
@@ -715,7 +729,7 @@ If the arm becomes difficult to control, reduce it:
 python vision_bridge_controlled.py --gui --controller --control-speed 0.006 --steps 3000
 ```
 
-### 7.2 Physics steps per controller update
+### 8.2 Physics steps per controller update
 
 Default:
 
@@ -723,11 +737,11 @@ Default:
 --physics-steps 2
 ```
 
-#### 7.2.1 What it does
+#### 8.2.1 What it does
 
 This controls how many PyBullet physics steps run after each controller sample.
 
-#### 7.2.2 Tuning
+#### 8.2.2 Tuning
 
 Try this faster setting:
 
@@ -737,9 +751,9 @@ python vision_bridge_controlled.py --gui --controller --control-speed 0.018 --ph
 
 Higher values advance the simulation farther per controller update. They do not necessarily make the controller more precise. If motion becomes jumpy, return to `--physics-steps 2`.
 
-### 7.3 Robot base position
+### 8.3 Robot base position
 
-#### 7.3.1 Move the base
+#### 8.3.1 Move the base
 
 The table-mounted robot X position can be changed at launch:
 
@@ -753,7 +767,7 @@ The default is `0.15`. The Y position can also be changed:
 python vision_bridge_controlled.py --gui --controller --robot-x 0.15 --robot-y 0.10 --steps 3000
 ```
 
-#### 7.3.2 Floor vs table
+#### 8.3.2 Floor vs table
 
 The robot can be deliberately placed on the floor for comparison:
 
@@ -765,7 +779,7 @@ For normal operation, use `--robot-mount table` or rely on the default.
 
 ---
 
-## 8. Rumble Intensity and Timing
+## 9. Rumble Intensity and Timing
 
 The final bridge exposes:
 
@@ -791,11 +805,11 @@ python vision_bridge_controlled.py --gui --controller --rumble-strength 0.3 --ru
 Use values between `0.0` and `1.0`. A driver may ignore rumble or report it as unsupported even when controller axes and buttons work.
 
 
-## 9. Troubleshooting
+## 10. Troubleshooting
 
-### 9.1 Conda / environment
+### 10.1 Conda / environment
 
-#### 9.1.1 `conda` is not recognized on Windows
+#### 10.1.1 `conda` is not recognized on Windows
 
 If `conda --version` produces `The term 'conda' is not recognized`, the shell has not been initialized. This is expected before `conda init`. Run:
 
@@ -815,7 +829,7 @@ conda info --base
 
 The base should refer to the intended Miniconda installation (typically `$env:LOCALAPPDATA\miniconda3`) rather than an old Anaconda directory. If it points to an old installation, uninstall that distribution or remove its `PATH` and shell-init entries.
 
-#### 9.1.2 Wrong Conda installation is being used
+#### 10.1.2 Wrong Conda installation is being used
 
 ```powershell
 where.exe conda
@@ -825,7 +839,7 @@ conda info --base
 
 The base should refer to the intended Miniconda installation (typically `$env:LOCALAPPDATA\miniconda3`) rather than an old Anaconda directory. If it points to an old installation, uninstall that distribution or remove its `PATH` and shell-init entries.
 
-#### 9.1.3 Wrong Python is active
+#### 10.1.3 Wrong Python is active
 
 ```powershell
 where.exe python
@@ -837,7 +851,7 @@ When `franka-haptics` is active, `python --version` should report `3.12.x` and `
 
 On macOS/Linux use `which python` / `which python3` / `conda info --envs` instead of `where.exe`.
 
-#### 9.1.4 `(base)` appears every time the terminal starts
+#### 10.1.4 `(base)` appears every time the terminal starts
 
 The `base` environment is set to auto-activate. Disable it:
 
@@ -847,7 +861,7 @@ conda config --set auto_activate_base false
 
 Restart the shell. You can still activate any environment explicitly with `conda activate franka-haptics`.
 
-#### 9.1.5 Package installed into the wrong Python
+#### 10.1.5 Package installed into the wrong Python
 
 ```bash
 python -m pip --version
@@ -861,9 +875,9 @@ python -m pip install ...
 
 over bare `pip install ...`, because `python -m pip` unambiguously uses pip from the currently active interpreter.
 
-### 9.2 Simulation and controller
+### 10.2 Simulation and controller
 
-#### 9.2.1 `No controllers found`
+#### 10.2.1 `No controllers found`
 
 Check the following:
 
@@ -879,7 +893,7 @@ Then run:
 python controller_test_ps5.py --list
 ```
 
-#### 9.2.2 Axes print correctly but the arm does not move
+#### 10.2.2 Axes print correctly but the arm does not move
 
 Run the controlled bridge with diagnostics:
 
@@ -895,7 +909,7 @@ If movement is too small, increase the speed:
 python vision_bridge_controlled.py --gui --controller --control-speed 0.018 --steps 1000
 ```
 
-#### 9.2.3 The robot is on the floor
+#### 10.2.3 The robot is on the floor
 
 The controlled runner defaults to table mounting. Explicitly select the table:
 
@@ -905,7 +919,7 @@ python vision_bridge_controlled.py --gui --controller --robot-mount table --step
 
 Do not confuse the controlled runner with older commands that may default to floor mounting.
 
-#### 9.2.4 Rumble does not work
+#### 10.2.4 Rumble does not work
 
 First test the controller separately:
 
@@ -917,11 +931,11 @@ Press a controller button once. Some DualSense driver combinations begin respond
 
 The controller may support input while not supporting rumble through the current SDL/Pygame backend.
 
-#### 9.2.5 `maxVelocities is an invalid keyword argument`
+#### 10.2.5 `maxVelocities is an invalid keyword argument`
 
 This project intentionally does not pass `maxVelocities` to `setJointMotorControlArray`, because some installed PyBullet versions reject that keyword. Use the project dependency environment and do not add that keyword back without checking the installed PyBullet API.
 
-#### 9.2.6 OpenGL or GUI problems
+#### 10.2.6 OpenGL or GUI problems
 
 Try TinyRenderer or safe mode:
 
@@ -935,7 +949,7 @@ You can also test without the GUI:
 python vision_bridge_controlled.py --controller --tiny --steps 1000
 ```
 
-#### 9.2.7 Camera windows do not appear
+#### 10.2.7 Camera windows do not appear
 
 Use the PyBullet GUI first. OpenCV windows require a desktop session and are enabled with:
 
@@ -943,7 +957,7 @@ Use the PyBullet GUI first. OpenCV windows require a desktop session and are ena
 python vision_bridge_controlled.py --gui --use-overhead --cv2-view --steps 1000
 ```
 
-#### 9.2.8 The arm collides with cubes immediately
+#### 10.2.8 The arm collides with cubes immediately
 
 Move the table-mounted base farther from the cube workspace:
 
@@ -955,7 +969,7 @@ The default controlled base position is already separated from the normal cube s
 
 ---
 
-## 10. Quick Command Reference
+## 11. Quick Command Reference
 
 Activate the environment first -- all commands in this section assume `franka-haptics` is active:
 
