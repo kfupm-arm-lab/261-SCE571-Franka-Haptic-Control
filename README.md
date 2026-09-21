@@ -1,4 +1,4 @@
-# Franka Panda Controlled Simulation Guide
+﻿# Franka Panda Controlled Simulation Guide
 
 **This guide explains how to install, test, and run the Franka Panda tabletop simulation with a PS5 DualSense controller.**
 
@@ -14,283 +14,306 @@ The final controlled demo supports:
 - RGB, depth, and segmentation data for vision experiments.
 
 You need:
+
 - A PS5 DualSense controller for the controlled demo.
 - The controller connected by USB or Bluetooth and charged.
 
 The simulation can run without a controller, but the `--controller` option requires a connected DualSense.
 
 ## Table of Contents
+
 1. [Installation](#1-installation)
-     - [Check your Python version](#11-check-your-python-version)
-     - [Install Python with pyenv, pyenv-win, Anaconda, or Miniconda](#12a-install-python-312--track-a-pyenv--pyenv-win--anaconda)
-     - [Create and activate an environment](#13-create--activate-a-virtual-environment)
-     - [Install dependencies](#14-install-the-exact-dependencies)
-2. [Controller](#2-controller)
-    - [Connect and configure the PS5 DualSense](#21-connect-and-configure-the-ps5-dualsense)
-     - [Test the controller](#22-test-the-controller-before-the-robot)
-  3. [PS5 DualSense Control Mapping](#3-ps5-dualsense-control-mapping)
-4. [Run the Final Controlled Demo](#4-run-the-final-controlled-demo)
-5. [How Movement and Feedback Work](#5-how-movement-and-feedback-work)
-6. [Speed and Control Tuning](#6-speed-and-control-tuning)
-7. [Rumble Intensity and Timing](#7-rumble-intensity-and-timing)
-8. [File Overview](#8-file-overview)
+   - [Platform support](#11-platform-support)
+   - [Install Miniconda](#12-install-miniconda)
+   - [Initialize Conda on Windows](#13-initialize-conda-on-windows)
+   - [Initialize Conda on macOS](#14-initialize-conda-on-macos)
+   - [Initialize Conda on Linux](#15-initialize-conda-on-linux)
+   - [Create the franka-haptics environment](#16-create-the-franka-haptics-environment)
+   - [Verify the active Python environment](#17-verify-the-active-python-environment)
+   - [Install dependencies](#18-install-dependencies)
+   - [Verify the installation](#19-verify-the-installation)
+2. [File Overview](#2-file-overview)
+3. [Controller Setup and Testing](#3-controller-setup-and-testing)
+   - [Connect and configure the PS5 DualSense](#31-connect-and-configure-the-ps5-dualsense)
+   - [Test the controller before the robot](#32-test-the-controller-before-the-robot)
+4. [PS5 DualSense Control Mapping](#4-ps5-dualsense-control-mapping)
+5. [Run the Final Controlled Demo](#5-run-the-final-controlled-demo)
+6. [How Movement and Feedback Work](#6-how-movement-and-feedback-work)
+7. [Speed and Control Tuning](#7-speed-and-control-tuning)
+8. [Rumble Intensity and Timing](#8-rumble-intensity-and-timing)
 9. [Troubleshooting](#9-troubleshooting)
 10. [Quick Command Reference](#10-quick-command-reference)
 
-
 ---
+
 ## 1. Installation
-> **Target Python:** 3.12.x. To avoid conflicts with system Python, this guide shows **two parallel tracks** until they converge:
-> - **Track A (recommended):** use **pyenv / pyenv‑win / anaconda** to keep multiple Python versions side‑by‑side without touching your OS Python.
-> - **Track B:** install **Python 3.12** directly on your system.
+
+> **Target Python:** 3.12.x. This project standardizes on **Miniconda** as the only recommended Python/environment manager.
 >
-> Choose **either** Track A or Track B in 2. Once Python 3.12 is available, the steps **are basically the same**.
+> ```
+> Miniconda
+>     +-- franka-haptics
+>           +-- Python 3.12
+>           +-- PyBullet (conda-forge)
+>           +-- NumPy
+>           +-- OpenCV
+>           +-- Pillow
+>           +-- Pygame
+> ```
+>
+> Install Miniconda once, create the `franka-haptics` environment, activate it when working on
+> the project, and deactivate it afterward. Miniconda is the only tested and officially supported
+> path for this project. You may still use alternative managers such as `pyenv`, full Anaconda,
+> system-wide Python, or `python -m venv` at your own risk, but problems arising from those
+> setups will not be addressed by the TAs.
 
-### 1.1) Check your Python version
+The normal setup path is:
 
-- **Windows (PowerShell or CMD)**
-  ```bat
-  py --version     :: Windows Python Launcher (handles multiple versions)
-  python --version
-  ```
-  Tip: Use a specific version with `py -3.12`.
-
-- **macOS / Ubuntu**
-  ```bash
-  python3 --version
-  ```
-
-If you **don’t** have **3.12.x**, pick **Track A** (pyenv) or **Track B** (direct) below.
-
----
-
-### 1.2A) Install Python 3.12 — Track A: pyenv / pyenv‑win / Anaconda
-
-**Why this track?** It keeps multiple Python versions **side‑by‑side** without touching OS Python (safer on macOS/Ubuntu and flexible on Windows).
-
-#### pyenv / pyenv‑win
-##### macOS (Homebrew)
-```bash
-# Install pyenv
-brew update
-brew install pyenv
-
-# Initialize pyenv in your shell (zsh/bash)
-echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.zshrc
-echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.zshrc
-echo 'eval "$(pyenv init - zsh)"' >> ~/.zshrc
-exec "$SHELL"
-
-# (Optional) helpful build deps for compiling Python via pyenv
-brew install openssl readline sqlite3 xz tcl-tk zstd zlib pkgconfig
+```
+Install Miniconda -> Initialize Conda -> Create franka-haptics -> Activate franka-haptics
+        -> Install dependencies -> Connect/test DualSense -> Run the simulation
 ```
 
-##### Ubuntu / Debian
-```bash
-# Build prerequisites (recommended before installing Python via pyenv)
-sudo apt update
-sudo apt install -y make build-essential libssl-dev zlib1g-dev \
-  libbz2-dev libreadline-dev libsqlite3-dev curl git \
-  libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev \
-  libffi-dev liblzma-dev
+### 1.1 Platform support
 
-# Install pyenv (automatic installer)
-curl -fsSL https://pyenv.run | bash
+> **Windows and macOS installations have been tested and verified.** Linux has not yet undergone the same level of validation, so Linux users may need to adapt some setup or controller-related steps themselves. Linux is not unsupported -- the software is expected to be portable -- but installation, graphics, SDL, USB, and controller-driver behavior on Linux has not been comprehensively tested and may require platform-specific troubleshooting.
 
-# Initialize pyenv in your shell
-echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
-echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
-echo 'eval "$(pyenv init - bash)"' >> ~/.bashrc
-exec "$SHELL"
+### 1.2 Install Miniconda
+
+Download **Miniconda** (not the full Anaconda distribution) from the official page:
+
+<https://www.anaconda.com/download/success?reg=skipped>
+
+> **Use Miniconda, not Anaconda.** Miniconda provides Conda and the Python environment-management functionality required by this project without installing the much larger collection of packages included with the full Anaconda distribution.
+
+Run the graphical installer and review the license terms to decide whether to accept them. If you accept, we recommend using the default settings (per-user installation). You do not need to install the full Anaconda distribution for this project.
+
+> **Already have Conda?** If `conda --version` already works on your system, you can skip to [Section 1.6 Create the franka-haptics environment](#16-create-the-franka-haptics-environment).
+
+### 1.3 Initialize Conda on Windows
+
+After installing Miniconda with the standard per-user installer, opening a new PowerShell window may still produce:
+
+```text
+conda : The term 'conda' is not recognized as the name of a cmdlet, function, script file, or operable program.
 ```
 
-##### Windows (pyenv‑win)
-```powershell
-# PowerShell: install pyenv-win
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-Invoke-WebRequest -UseBasicParsing `
-  -Uri "https://raw.githubusercontent.com/pyenv-win/pyenv-win/master/pyenv-win/install-pyenv-win.ps1" `
-  -OutFile "$HOME\install-pyenv-win.ps1"
-& "$HOME\install-pyenv-win.ps1"
-# Restart the terminal so "pyenv" is on PATH
-```
+This does not necessarily mean Miniconda failed to install -- it usually means the shell has not been initialized for Conda yet.
 
-##### Install & select Python 3.12 (all OSes with pyenv/pyenv‑win)
-```bash
-pyenv install 3.12.11
-pyenv global 3.12.11
-python --version     # should now report 3.12.x
-```
-
-> **Tip:** If `pyenv install` fails due to missing libraries, re‑check the build‑deps above and consult pyenv’s “Common Build Problems.”
-
----
-
-#### Anaconda or Miniconda
-
-Choose **Anaconda** for the full data-science distribution, or **Miniconda** for a smaller installation. Download the installer from one of these official pages:
-
-- Anaconda: <https://www.anaconda.com/download>
-- Miniconda: <https://docs.conda.io/projects/miniconda/en/latest/>
-
-##### Windows
-
-You can install Miniconda or full Anaconda directly from PowerShell with WinGet:
+With the standard per-user Miniconda installation, initialize PowerShell using:
 
 ```powershell
-# Recommended: smaller Miniconda installation
-winget install --id Anaconda.Miniconda3 -e
-
-# Alternative: full Anaconda installation
-winget install --id Anaconda.Anaconda3 -e
+& "$env:LOCALAPPDATA\miniconda3\Scripts\conda.exe" init powershell
 ```
 
-Install only one of the two options. Restart PowerShell after installation, then initialize Conda:
+Then disable automatic activation of the Conda `base` environment:
 
 ```powershell
-conda init powershell
-```
-Then restart powershell to have `conda` command available.
-
-You can also download and run the Windows installer from the official links above, then use the same Conda commands.
-
-##### macOS
-
-Download the macOS installer for your CPU architecture, or install Miniconda with Homebrew:
-
-```bash
-brew install --cask miniconda
-conda init
+& "$env:LOCALAPPDATA\miniconda3\Scripts\conda.exe" config --set auto_activate_base false
 ```
 
-Restart the terminal, then run:
+What these commands do:
 
-```bash
-conda create -n franka-vision python=3.12 -y
-conda activate franka-vision
-```
+- `conda init powershell` adds Conda shell initialization to your PowerShell profile so that `conda` is available in new PowerShell sessions.
+- `conda config --set auto_activate_base false` prevents the `base` environment from activating every time PowerShell starts; a project environment is activated only when you run `conda activate` explicitly.
 
-##### Ubuntu / Debian
+This gives the intended behavior:
 
-Download and run the Linux installer, then restart the terminal:
+- `conda` is available from PowerShell.
+- The `base` environment does not activate automatically.
+- The project environment is activated only when explicitly requested.
 
-```bash
-bash Miniconda3-latest-Linux-x86_64.sh
-source ~/.bashrc
-conda create -n franka-vision python=3.12 -y
-conda activate franka-vision
-```
+Close **all** PowerShell and Windows Terminal sessions and open a new PowerShell terminal, then verify:
 
-Use the ARM64 installer instead if the computer uses an ARM64 processor.
-
-
----
-
-### 1.2B) Install Python 3.12 — Track B: direct install
-
-**Windows** (choose one):
 ```powershell
-# WinGet (official package manager)
-winget install -e --id Python.Python.3.12
-
-# Or download the official installer:
-# https://www.python.org/downloads/windows/
-# During install, check "Add Python to PATH".
+conda --version
+conda info --base
 ```
 
-**macOS** (choose one):
-```bash
-# Homebrew
-brew install python@3.12
+If troubleshooting is needed, also check:
 
-# Or use the official macOS installer:
-# https://www.python.org/downloads/macos/
+```powershell
+Get-Command conda
+where.exe conda
 ```
 
-**Ubuntu**
-```bash
-# pyenv (Track A) is recommended on Ubuntu since python3.12 apt packages vary by release.
-# If your release provides them:
-sudo apt update && sudo apt install -y python3.12 python3.12-venv
-```
+`$env:LOCALAPPDATA\miniconda3` (`%LOCALAPPDATA%\miniconda3`) is the common default per-user installation location. If you selected a different installation directory, adjust the path accordingly. Do not add the entire Miniconda installation manually to the global Windows `PATH` unless required for troubleshooting --- prefer normal Conda shell initialization.
 
-> From here on, **Track A** and **Track B** converge — you now have **Python 3.12** available.
+### 1.4 Initialize Conda on macOS
 
----
+Download the appropriate Miniconda installer for your architecture (Apple Silicon / ARM64 or Intel / x86-64) from the official page above and run the installer.
 
-
-### 1.3) Create & activate a virtual environment
-
-#### pyenv
-
-Go to the folder containing the simulation files and type this in the terminal
+For the normal `zsh` shell (default on recent macOS), initialize Conda with:
 
 ```bash
-python -m venv .venv
+conda init zsh
+conda config --set auto_activate_base false
 ```
 
-**Activate it**
+Then restart Terminal or run:
 
-- macOS / Linux (zsh/bash)
-  ```bash
-  source .venv/bin/activate
-  ```
-- macOS / Linux (fish)
-  ```bash
-  source .venv/bin/activate.fish
-  ```
-- Windows (PowerShell)
-  ```powershell
-  .venv\Scripts\Activate.ps1
-  ```
-- Windows (CMD)
-  ```bat
-  .venv\Scripts\activate.bat
-  ```
-
-You should see a `(.venv)` prefix in your terminal prompt.
-
-
-The simulation can run without a controller, but the `--controller` option requires a connected DualSense.
-
-### Anaconda
-
-Create the project environment once:
-
-```bat
-conda create -n franka-vision python=3.12 -y
+```bash
+source ~/.zshrc
 ```
+
+For users explicitly using Bash:
+
+```bash
+conda init bash
+conda config --set auto_activate_base false
+```
+
+Restart the shell after initialization, then verify:
+
+```bash
+conda --version
+conda info --base
+```
+
+### 1.5 Initialize Conda on Linux
+
+> Linux has not been fully validated by the project maintainers. The steps below are the standard Miniconda flow and are expected to be portable, but Linux users may need to adapt dependency, graphics, SDL, USB, or controller-driver steps where necessary.
+
+Download and run the official Miniconda Linux installer appropriate to your architecture, then initialize your shell. For Bash:
+
+```bash
+conda init bash
+conda config --set auto_activate_base false
+```
+
+Restart the shell and verify with `conda --version` and `conda info --base`.
+
+### 1.6 Create the franka-haptics environment
+
+Create exactly one project environment named `franka-haptics`:
+
+```bash
+conda create -n franka-haptics python=3.12 pip
+```
+
+Follow the on-screen instructions to review and confirm the creation.
 
 Activate it:
 
-```bat
-conda activate franka-vision
+```bash
+conda activate franka-haptics
 ```
 
-Confirm that the correct Python is active:
+A successful activation should produce a prompt similar to:
 
-```bat
-python --version
-where python
+```text
+(franka-haptics)
 ```
 
-The version should be Python 3.12.x, and the selected Python should be inside the `franka-vision` environment.
+For example on Windows:
 
----
+```text
+(franka-haptics) PS C:\Users\username\...
+```
 
-### 1.4) Install the exact dependencies
+All installation, controller-test, and simulation commands in this guide assume that `franka-haptics` is active.
+
+To leave the environment when you are done:
 
 ```bash
-pip install "numpy==1.26.0" "pybullet==3.2.5" "opencv-python==4.10.0.82" "pillow==11.3.0" pygame
+conda deactivate
 ```
 
-> If a platform wheel isn’t available for your OS/arch, try the nearest patch version or temporarily drop the pin to install a compatible build.
+### 1.7 Verify the active Python environment
 
+Before installing dependencies, verify that the active interpreter belongs to `franka-haptics`:
+
+```bash
+python --version
+python -m pip --version
+```
+
+The Python version should be `3.12.x`.
+
+On Windows also check:
+
+```powershell
+where.exe python
+where.exe pip
+```
+
+When `franka-haptics` is active, the selected Python should resolve inside the Conda environment rather than to a system Python or an old installation.
+
+You can also list environments:
+
+```bash
+conda info --envs
+```
+
+The `*` should appear beside `franka-haptics`.
+
+### 1.8 Install dependencies
+
+This project uses Conda and pip deliberately:
+
+- **Conda** manages the Python interpreter and the environment itself.
+- **conda-forge** is preferred for dependencies that require compiled, platform-specific binaries (notably PyBullet).
+- **pip** is appropriate for the remaining Python packages.
+- **`python -m pip`** is preferred over bare `pip` because it unambiguously uses pip belonging to the currently active Python interpreter. Do not install the same dependency with both Conda and pip.
+
+PyBullet requires special treatment on Windows with Python 3.12: older PyBullet releases may not provide a suitable precompiled Windows/Python 3.12 wheel on PyPI, and `pip` may attempt to compile from source. Install the pinned, tested PyBullet build through `conda-forge`:
+
+```bash
+conda activate franka-haptics
+conda install -c conda-forge pybullet==3.2.5
+```
+
+Then install the remaining required packages with pip:
+
+```bash
+python -m pip install "numpy==1.26.0" "opencv-python==4.10.0.82" "pillow==11.3.0" pygame
+```
+
+Keep the exact pinned versions shown here -- they are the tested set for this project.
+
+### 1.9 Verify the installation
+
+```bash
+python --version
+conda info --envs
+python -m pip --version
+```
+
+Then verify imports:
+
+```bash
+python -c "import numpy, pybullet, cv2, PIL, pygame; print('All required packages imported successfully.')"
+```
+
+Optionally print package versions:
+
+```bash
+python -c "import numpy, cv2, PIL, pygame; print('NumPy:', numpy.__version__); print('OpenCV:', cv2.__version__); print('Pillow:', PIL.__version__); print('Pygame:', pygame.__version__)"
+```
 
 ---
 
-## 2. Controller
-### 2.1 Connect and Configure the PS5 DualSense
+
+## 2. File Overview
+
+### `controller_test_ps5.py`
+
+Standalone PS5 DualSense diagnostic program. It can list controllers, print live axis/button/D-pad events, read normalized R2 force, test the logical R2 lock, and test rumble. The final controlled bridge imports its reusable controller interface.
+
+### `pybullet_vision_env_controlled.py`
+
+Controlled environment. It contains the table mounting, controller-to-IK movement, gripper commands, and hand/finger contact checks used by the final demo.
+
+### `vision_bridge_controlled.py`
+
+Final controller and vision runner. It imports the controlled environment, reads the DualSense, commands the robot, checks contact/grasp state, triggers rumble, and optionally runs the camera pipeline.
+
+---
+
+
+## 3. Controller Setup and Testing
+
+### 3.1 Connect and configure the PS5 DualSense
 
 1. Connect the DualSense by USB or pair it through Bluetooth.
 2. Turn on the controller and keep it connected while running the simulation.
@@ -298,15 +321,17 @@ pip install "numpy==1.26.0" "pybullet==3.2.5" "opencv-python==4.10.0.82" "pillow
 
 If the controller is detected but rumble does not work, reconnect it by USB and repeat the diagnostics. Different Windows, Bluetooth, and SDL driver combinations can expose different controller capabilities.
 
-> Another Soution for the rumble (for example on Windows), if you connected the controller with USB, you will find the controller in the volume options as a speaker, you should raise the volume. You also might face that you need to keep the speaker choice as the controller in some of the vibration demos.
+> **Note:** On some Windows USB configurations the DualSense may appear as an audio device. If rumble is silent, check that the device volume is not muted and that the correct output device is selected. This is an observed driver behavior that can affect haptic behavior in some setups -- it is not a universal requirement.
 
-### 2.2 Test the Controller Before the Robot
+### 3.2 Test the controller before the robot
 
-The controller test is independent from PyBullet. It is useful for confirming that the operating system, Pygame, axes, buttons, and rumble are working before starting the robot.
+The controller test is independent of PyBullet. It confirms that the operating system, Pygame, axes, buttons, and rumble are working before starting the robot.
+
+All commands in this section assume `franka-haptics` is active (`conda activate franka-haptics`).
 
 #### List controllers
 
-```bat
+```bash
 python controller_test_ps5.py --list
 ```
 
@@ -320,7 +345,7 @@ If no controller is listed, check the USB/Bluetooth connection, controller charg
 
 #### Read axes, buttons, and D-pad
 
-```bat
+```bash
 python controller_test_ps5.py --duration 10
 ```
 
@@ -333,18 +358,17 @@ button 0: UP
 hat 0: (0, 1)
 ```
 
-Stop a test that runs indefinitely with `Ctrl+C`.
-When you press a button, it will appear DOWN then UP when you leave it. You will also find some noise in the joysticks readings.
+Stop a test that runs indefinitely with `Ctrl+C`. When you press a button, it will show `DOWN` then `UP` when released. Small fluctuations in joystick readings near zero are normal.
 
 #### Test startup rumble
 
-```bat
+```bash
 python controller_test_ps5.py --rumble-test --duration 3
 ```
 
 For a stronger and longer test:
 
-```bat
+```bash
 python controller_test_ps5.py --rumble-test --rumble-strength 1.0 --rumble-duration 1000 --duration 3
 ```
 
@@ -352,21 +376,21 @@ The strength range is `0.0` to `1.0`. Duration is in milliseconds.
 
 #### Test rumble after a button press
 
-```bat
+```bash
 python controller_test_ps5.py --rumble-on-button --duration 10
 ```
 
 For both startup rumble and button rumble:
 
-```bat
+```bash
 python controller_test_ps5.py --rumble-test --rumble-on-button --rumble-strength 0.8 --rumble-duration 300 --duration 10
 ```
 
 Some DualSense driver configurations do not respond to the initial rumble command until the controller has received an input event. If startup rumble does not work, press a button once and test again. This behavior is controller/driver dependent; it does not necessarily mean the Python code failed.
 
-### R2 force reading
+#### R2 force reading
 
-```bat
+```bash
 python controller_test_ps5.py --duration 10 --r2-force-scale 1.5
 ```
 
@@ -376,15 +400,15 @@ R2 is normalized to a `0.0..1.0` value. The script also prints a scaled force va
 R2 axis 5: 0.420 (force=0.630)
 ```
 
-### R2 logical lock at 50%
+#### R2 logical lock at 50%
 
-```bat
+```bash
 python controller_test_ps5.py --duration 10 --r2-lock --r2-threshold 0.5 --rumble-strength 1.0
 ```
 
 When R2 reaches 50%, the script reports `R2 LOCKED` and sends a maximum-strength vibration pulse. When the value drops below 50%, it reports `R2 UNLOCKED` and sends another pulse. This is a software state; it does not physically stop or harden the trigger.
 
-### Example output while running
+#### Example output while running
 
 Your exact values will vary with the controller and how quickly the trigger is pressed, but a typical session looks like this:
 
@@ -410,11 +434,11 @@ axis 5: -1.000
 
 The `R2 axis 5` line is the normalized trigger value. The separate `axis 5` line is the raw SDL axis value, which commonly ranges from `-1.0` to `+1.0` on this controller. The vibration is felt at the `R2 LOCKED` and `R2 UNLOCKED` transitions, but it is not printed as a separate message.
 
-### Important DualSense limitation
+#### DualSense adaptive-trigger note
 
-A standard PS5 DualSense cannot physically increase R2 trigger resistance or create a real mechanical hair-trigger through `pygame` or another normal software API. R2 intensity reading, force scaling, logical locking, and vibration feedback are supported. Actual trigger travel adjustment requires different hardware, such as a controller with mechanical trigger-stop features.
+This project currently uses Pygame/SDL for controller input and rumble. It does not implement DualSense adaptive-trigger resistance. The `R2 LOCKED` state used here is therefore a software threshold with rumble feedback, not a physical trigger stop.
 
-### Controller test options
+#### Controller test options
 
 | Option | Meaning | Default |
 | --- | --- | --- |
@@ -433,8 +457,8 @@ A standard PS5 DualSense cannot physically increase R2 trigger resistance or cre
 
 ---
 
+## 4. PS5 DualSense Control Mapping
 
-## 3. PS5 DualSense Control Mapping
 The following is the standard mapping reported by `pygame` for a Wireless DualSense in the active environment.
 
 ### Standard PS5 DualSense buttons
@@ -455,7 +479,6 @@ The following is the standard mapping reported by `pygame` for a Wireless DualSe
 | `button 11` | Right stick click |
 | `button 12` | PS button |
 
-
 The mapping below matches the DualSense output observed with Pygame in the active environment. Always trust the live output from `controller_test_ps5.py` if a different driver reports different numbers.
 
 ### Robot controls
@@ -470,7 +493,6 @@ The mapping below matches the DualSense output observed with Pygame in the activ
 
 The bridge applies a deadzone so small stick drift does not move the robot.
 
-
 ### D-pad
 
 The D-pad is `hat 0`, with `(x, y)` values:
@@ -482,7 +504,6 @@ The D-pad is `hat 0`, with `(x, y)` values:
 | `hat 0: (-1, 0)` | Left |
 | `hat 0: (1, 0)` | Right |
 | `hat 0: (0, 0)` | Released |
-
 
 ### Axes
 
@@ -499,22 +520,21 @@ Typical DualSense axis numbering is:
 
 In practice, the script normalizes the trigger to a clean `0.0..1.0` force value before using it for lock or force logic.
 
-
 ```text
 R2 axis 5: 0.420 (force=0.420)
 ```
 
 To enable the software lock at 50% and maximum transition vibration:
 
-```bat
+```bash
 python controller_test_ps5.py --duration 10 --r2-lock --r2-threshold 0.5 --rumble-strength 1.0
 ```
 
-`R2 LOCKED` is printed at or above the threshold and `R2 UNLOCKED` when the value falls below it. A standard DualSense cannot physically increase R2 resistance or create a mechanical trigger stop; this lock is a software state with haptic feedback only.
+`R2 LOCKED` is printed at or above the threshold and `R2 UNLOCKED` when the value falls below it. This project currently uses Pygame/SDL and does not implement DualSense adaptive-trigger resistance, so this lock is a software state with haptic feedback only.
 
 ---
 
-## 4. Run the Final Controlled Demo
+## 5. Run the Final Controlled Demo
 
 During the final demo:
 
@@ -528,15 +548,13 @@ During the final demo:
 
 The simulation is a control and vision prototype. The grasp detector is based on PyBullet contact links, so it confirms simultaneous finger contact rather than proving that the cube is physically lifted and retained under all dynamics.
 
-
 **Use this command for the normal final demonstration:**
 
-```bat
-python vision_bridge_controlled.py --gui --controller --control-speed 0.03 --use-overhead --physics-steps 4
+```bash
+python vision_bridge_controlled.py --gui --controller --control-speed 0.03 --use-overhead --physics-steps 4 --steps 3000
 ```
 
-The command opens the PyBullet GUI, mounts the robot on the table, enables the DualSense, enables the overhead camera, and stops after 3000 control cycles.
-
+The command opens the PyBullet GUI, mounts the robot on the table, enables the DualSense, enables the overhead camera, and stops after `--steps 3000` control cycles. The default `--steps` value is `-1` (run until `Ctrl+C` or the window is closed), so `--steps 3000` is included explicitly where a finite run is desired.
 
 Stop the demo with `Ctrl+C` or close the simulation window.
 
@@ -544,7 +562,7 @@ Stop the demo with `Ctrl+C` or close the simulation window.
 
 Use this when checking controller values or investigating movement:
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --debug-controller --use-overhead --print-every 30 --steps 3000
 ```
 
@@ -554,7 +572,7 @@ Every 30 cycles it prints the latest axis values. When a stick is moved, the cor
 
 The controlled bridge can also display the simulation without reading the DualSense:
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --use-overhead --steps 1000
 ```
 
@@ -562,13 +580,13 @@ Without `--controller`, the arm is not commanded by the joystick.
 
 ### Use both cameras
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --use-overhead --use-wrist --steps 3000
 ```
 
 ### Save annotated camera frames
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --use-overhead --save output --steps 3000
 ```
 
@@ -576,7 +594,7 @@ Frames are saved in the `output` directory using names such as `overhead_000000.
 
 ### Use the segmentation detector
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --use-overhead --detector seg --steps 3000
 ```
 
@@ -586,7 +604,7 @@ The segmentation detector groups rendered pixels by PyBullet body/link ID. It is
 
 For slower computers or graphics-driver problems:
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --safe-mode --steps 3000
 ```
 
@@ -594,7 +612,7 @@ Safe mode uses a 320x240 overhead image and TinyRenderer. It is slower visually 
 
 ---
 
-## 5. How Movement and Feedback Work
+## 6. How Movement and Feedback Work
 
 The controlled bridge performs the following loop:
 
@@ -617,7 +635,7 @@ Contact feedback is event-based rather than continuous:
 
 ---
 
-## 6. Speed and Control Tuning
+## 7. Speed and Control Tuning
 
 The final bridge exposes two main speed-related options.
 
@@ -631,13 +649,13 @@ Default:
 
 This is the Cartesian target change applied per controller update, in meters. Increase it for faster stick response:
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --control-speed 0.018 --steps 3000
 ```
 
 The tested faster setting is:
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --control-speed 0.03 --physics-steps 4 --steps 3000
 ```
 
@@ -645,7 +663,7 @@ A conservative range to try is approximately `0.008` to `0.03`.
 
 If the arm becomes difficult to control, reduce it:
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --control-speed 0.006 --steps 3000
 ```
 
@@ -659,7 +677,7 @@ Default:
 
 This controls how many PyBullet physics steps run after each controller sample. Try this faster setting:
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --control-speed 0.018 --physics-steps 3 --steps 3000
 ```
 
@@ -669,19 +687,19 @@ Higher values advance the simulation farther per controller update. They do not 
 
 The table-mounted robot X position can be changed at launch:
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --robot-x 0.10 --steps 3000
 ```
 
 The default is `0.15`. The Y position can also be changed:
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --robot-x 0.15 --robot-y 0.10 --steps 3000
 ```
 
 The robot can be deliberately placed on the floor for comparison:
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --robot-mount floor --steps 3000
 ```
 
@@ -689,7 +707,7 @@ For normal operation, use `--robot-mount table` or rely on the default.
 
 ---
 
-## 7. Rumble Intensity and Timing
+## 8. Rumble Intensity and Timing
 
 The final bridge exposes:
 
@@ -700,7 +718,7 @@ The final bridge exposes:
 
 Example with stronger contact feedback:
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --rumble-strength 0.8 --rumble-duration 200 --steps 3000
 ```
 
@@ -708,32 +726,71 @@ The grasp rumble uses twice the configured duration. For example, with `--rumble
 
 Use a lower intensity if the controller is uncomfortable:
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --rumble-strength 0.3 --rumble-duration 120 --steps 3000
 ```
 
 Use values between `0.0` and `1.0`. A driver may ignore rumble or report it as unsupported even when controller axes and buttons work.
 
----
-
-## 8. File Overview
-
-### `controller_test_ps5.py`
-
-Standalone PS5 DualSense diagnostic program. It can list controllers, print live axis/button/D-pad events, read normalized R2 force, test the logical R2 lock, and test rumble. The final controlled bridge imports its reusable controller interface.
-
-
-### `pybullet_vision_env_controlled.py`
-
-Controlled environment. It contains the table mounting, controller-to-IK movement, gripper commands, and hand/finger contact checks used by the final demo.
-
-### `vision_bridge_controlled.py`
-
-Final controller and vision runner. It imports the controlled environment, reads the DualSense, commands the robot, checks contact/grasp state, triggers rumble, and optionally runs the camera pipeline.
-
----
 
 ## 9. Troubleshooting
+
+### `conda` is not recognized on Windows
+
+If `conda --version` produces `The term 'conda' is not recognized`, the shell has not been initialized. This is expected before `conda init`. Run:
+
+```powershell
+& "$env:LOCALAPPDATA\miniconda3\Scripts\conda.exe" init powershell
+& "$env:LOCALAPPDATA\miniconda3\Scripts\conda.exe" config --set auto_activate_base false
+```
+
+Then close all PowerShell and Windows Terminal sessions and open a new PowerShell terminal. Verify with `conda --version` and `conda info --base`. If the Miniconda installation is in a different directory, adjust the path accordingly.
+
+### Wrong Conda installation is being used
+
+```powershell
+where.exe conda
+Get-Command conda
+conda info --base
+```
+
+The base should refer to the intended Miniconda installation (typically `$env:LOCALAPPDATA\miniconda3`) rather than an old Anaconda directory. If it points to an old installation, uninstall that distribution or remove its `PATH` and shell-init entries.
+
+### Wrong Python is active
+
+```powershell
+where.exe python
+python --version
+conda info --envs
+```
+
+When `franka-haptics` is active, `python --version` should report `3.12.x` and `where.exe python` should point inside the `franka-haptics` environment. If it does not, ensure you ran `conda activate franka-haptics` and that no other manager is shadowing `python`.
+
+On macOS/Linux use `which python` / `which python3` / `conda info --envs` instead of `where.exe`.
+
+### `(base)` appears every time the terminal starts
+
+The `base` environment is set to auto-activate. Disable it:
+
+```bash
+conda config --set auto_activate_base false
+```
+
+Restart the shell. You can still activate any environment explicitly with `conda activate franka-haptics`.
+
+### Package installed into the wrong Python
+
+```bash
+python -m pip --version
+```
+
+This shows which Python `pip` belongs to. Prefer:
+
+```bash
+python -m pip install ...
+```
+
+over bare `pip install ...`, because `python -m pip` unambiguously uses pip from the currently active interpreter.
 
 ### `No controllers found`
 
@@ -741,14 +798,13 @@ Check the following:
 
 1. The DualSense is connected by USB or Bluetooth.
 2. The controller is charged and powered on.
-3. The controller is powered on.
-4. Other applications are not holding the controller connection.
-5. The correct Conda environment is active.
-6. Pygame is installed in that environment.
+3. Other applications are not holding the controller connection.
+4. The `franka-haptics` Conda environment is active.
+5. Pygame is installed in that environment.
 
 Then run:
 
-```bat
+```bash
 python controller_test_ps5.py --list
 ```
 
@@ -756,7 +812,7 @@ python controller_test_ps5.py --list
 
 Run the controlled bridge with diagnostics:
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --debug-controller --print-every 30 --steps 1000
 ```
 
@@ -764,7 +820,7 @@ Move one stick at a time and check that the printed values change. Also verify t
 
 If movement is too small, increase the speed:
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --control-speed 0.018 --steps 1000
 ```
 
@@ -772,7 +828,7 @@ python vision_bridge_controlled.py --gui --controller --control-speed 0.018 --st
 
 The controlled runner defaults to table mounting. Explicitly select the table:
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --robot-mount table --steps 1000
 ```
 
@@ -782,7 +838,7 @@ Do not confuse the controlled runner with older commands that may default to flo
 
 First test the controller separately:
 
-```bat
+```bash
 python controller_test_ps5.py --rumble-test --rumble-on-button --duration 10
 ```
 
@@ -798,13 +854,13 @@ This project intentionally does not pass `maxVelocities` to `setJointMotorContro
 
 Try TinyRenderer or safe mode:
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --safe-mode --steps 1000
 ```
 
 You can also test without the GUI:
 
-```bat
+```bash
 python vision_bridge_controlled.py --controller --tiny --steps 1000
 ```
 
@@ -812,7 +868,7 @@ python vision_bridge_controlled.py --controller --tiny --steps 1000
 
 Use the PyBullet GUI first. OpenCV windows require a desktop session and are enabled with:
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --use-overhead --cv2-view --steps 1000
 ```
 
@@ -820,7 +876,7 @@ python vision_bridge_controlled.py --gui --use-overhead --cv2-view --steps 1000
 
 Move the table-mounted base farther from the cube workspace:
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --robot-x 0.10 --steps 1000
 ```
 
@@ -830,9 +886,15 @@ The default controlled base position is already separated from the normal cube s
 
 ## 10. Quick Command Reference
 
+Activate the environment first -- all commands in this section assume `franka-haptics` is active:
+
+```bash
+conda activate franka-haptics
+```
+
 ### Controller diagnostics
 
-```bat
+```bash
 python controller_test_ps5.py --list
 python controller_test_ps5.py --duration 10
 python controller_test_ps5.py --rumble-test --duration 3
@@ -841,36 +903,42 @@ python controller_test_ps5.py --rumble-on-button --duration 10
 
 ### Normal controlled demo
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --use-overhead --steps 3000
 ```
 
 ### Fast controlled demo
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --control-speed 0.03 --physics-steps 4 --steps 3000
 ```
 
 ### Stronger rumble
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --rumble-strength 0.8 --rumble-duration 200 --steps 3000
 ```
 
 ### Controlled demo with both cameras
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --use-overhead --use-wrist --steps 3000
 ```
 
 ### Safe mode
 
-```bat
+```bash
 python vision_bridge_controlled.py --gui --controller --safe-mode --steps 3000
 ```
 
 ### Vision-only demo
 
-```bat
+```bash
 python vision_bridge.py --gui --use-overhead --use-wrist --detector seg --steps 1000
+```
+
+When finished:
+
+```bash
+conda deactivate
 ```
