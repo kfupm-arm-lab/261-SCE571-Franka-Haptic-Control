@@ -92,6 +92,8 @@ Run the graphical installer and review the license terms to decide whether to ac
 
 ### 1.3 Initialize Conda on Windows
 
+#### 1.3.1 Why `conda` is not recognized
+
 After installing Miniconda with the standard per-user installer, opening a new PowerShell window may still produce:
 
 ```text
@@ -99,6 +101,8 @@ conda : The term 'conda' is not recognized as the name of a cmdlet, function, sc
 ```
 
 This does not necessarily mean Miniconda failed to install -- it usually means the shell has not been initialized for Conda yet.
+
+#### 1.3.2 Initialize PowerShell
 
 With the standard per-user Miniconda installation, initialize PowerShell using:
 
@@ -122,6 +126,8 @@ This gives the intended behavior:
 - `conda` is available from PowerShell.
 - The `base` environment does not activate automatically.
 - The project environment is activated only when explicitly requested.
+
+#### 1.3.3 Verify the shell
 
 Close **all** PowerShell and Windows Terminal sessions and open a new PowerShell terminal, then verify:
 
@@ -249,6 +255,8 @@ The `*` should appear beside `franka-haptics`.
 
 ### 1.8 Install dependencies
 
+#### 1.8.1 How Conda and pip are used
+
 This project uses Conda and pip deliberately:
 
 - **Conda** manages the Python interpreter and the environment itself.
@@ -256,12 +264,16 @@ This project uses Conda and pip deliberately:
 - **pip** is appropriate for the remaining Python packages.
 - **`python -m pip`** is preferred over bare `pip` because it unambiguously uses pip belonging to the currently active Python interpreter. Do not install the same dependency with both Conda and pip.
 
+#### 1.8.2 Install PyBullet via conda-forge
+
 PyBullet requires special treatment on Windows with Python 3.12: older PyBullet releases may not provide a suitable precompiled Windows/Python 3.12 wheel on PyPI, and `pip` may attempt to compile from source. Install the pinned, tested PyBullet build through `conda-forge`:
 
 ```bash
 conda activate franka-haptics
 conda install -c conda-forge pybullet==3.2.5
 ```
+
+#### 1.8.3 Install the remaining packages
 
 Then install the remaining required packages with pip:
 
@@ -273,17 +285,23 @@ Keep the exact pinned versions shown here -- they are the tested set for this pr
 
 ### 1.9 Verify the installation
 
+#### 1.9.1 Check the environment
+
 ```bash
 python --version
 conda info --envs
 python -m pip --version
 ```
 
+#### 1.9.2 Verify imports
+
 Then verify imports:
 
 ```bash
 python -c "import numpy, pybullet, cv2, PIL, pygame; print('All required packages imported successfully.')"
 ```
+
+#### 1.9.3 Optionally print versions
 
 Optionally print package versions:
 
@@ -335,7 +353,9 @@ The controller test is independent of PyBullet. It confirms that the operating s
 
 All commands in this section assume `franka-haptics` is active (`conda activate franka-haptics`).
 
-#### List controllers
+#### 3.2.1 List controllers and read axes / D-pad
+
+##### List controllers
 
 ```bash
 python controller_test_ps5.py --list
@@ -349,7 +369,7 @@ Expected output resembles:
 
 If no controller is listed, check the USB/Bluetooth connection, controller charge, and Windows game-controller settings.
 
-#### Read axes, buttons, and D-pad
+##### Read axes, buttons, and D-pad
 
 ```bash
 python controller_test_ps5.py --duration 10
@@ -366,7 +386,9 @@ hat 0: (0, 1)
 
 Stop a test that runs indefinitely with `Ctrl+C`. When you press a button, it will show `DOWN` then `UP` when released. Small fluctuations in joystick readings near zero are normal.
 
-#### Test startup rumble
+#### 3.2.2 Test rumble
+
+##### Test startup rumble
 
 ```bash
 python controller_test_ps5.py --rumble-test --duration 3
@@ -380,7 +402,7 @@ python controller_test_ps5.py --rumble-test --rumble-strength 1.0 --rumble-durat
 
 The strength range is `0.0` to `1.0`. Duration is in milliseconds.
 
-#### Test rumble after a button press
+##### Test rumble after a button press
 
 ```bash
 python controller_test_ps5.py --rumble-on-button --duration 10
@@ -394,7 +416,9 @@ python controller_test_ps5.py --rumble-test --rumble-on-button --rumble-strength
 
 Some DualSense driver configurations do not respond to the initial rumble command until the controller has received an input event. If startup rumble does not work, press a button once and test again. This behavior is controller/driver dependent; it does not necessarily mean the Python code failed.
 
-#### R2 force reading
+#### 3.2.3 R2 diagnostics
+
+##### R2 force reading
 
 ```bash
 python controller_test_ps5.py --duration 10 --r2-force-scale 1.5
@@ -406,7 +430,7 @@ R2 is normalized to a `0.0..1.0` value. The script also prints a scaled force va
 R2 axis 5: 0.420 (force=0.630)
 ```
 
-#### R2 logical lock at 50%
+##### R2 logical lock at 50%
 
 ```bash
 python controller_test_ps5.py --duration 10 --r2-lock --r2-threshold 0.5 --rumble-strength 1.0
@@ -414,7 +438,9 @@ python controller_test_ps5.py --duration 10 --r2-lock --r2-threshold 0.5 --rumbl
 
 When R2 reaches 50%, the script reports `R2 LOCKED` and sends a maximum-strength vibration pulse. When the value drops below 50%, it reports `R2 UNLOCKED` and sends another pulse. This is a software state; it does not physically stop or harden the trigger.
 
-#### Example output while running
+#### 3.2.4 Example output and options
+
+##### Example output while running
 
 Your exact values will vary with the controller and how quickly the trigger is pressed, but a typical session looks like this:
 
@@ -440,11 +466,11 @@ axis 5: -1.000
 
 The `R2 axis 5` line is the normalized trigger value. The separate `axis 5` line is the raw SDL axis value, which commonly ranges from `-1.0` to `+1.0` on this controller. The vibration is felt at the `R2 LOCKED` and `R2 UNLOCKED` transitions, but it is not printed as a separate message.
 
-#### DualSense adaptive-trigger note
+##### DualSense adaptive-trigger note
 
 This project currently uses Pygame/SDL for controller input and rumble. It does not implement DualSense adaptive-trigger resistance. The `R2 LOCKED` state used here is therefore a software threshold with rumble feedback, not a physical trigger stop.
 
-#### Controller test options
+##### Controller test options
 
 | Option | Meaning | Default |
 | --- | --- | --- |
@@ -467,7 +493,9 @@ This project currently uses Pygame/SDL for controller input and rumble. It does 
 
 The following is the standard mapping reported by `pygame` for a Wireless DualSense in the active environment.
 
-### Standard PS5 DualSense buttons
+### 4.1 Standard PS5 DualSense inputs
+
+#### 4.1.1 Buttons
 
 | Pygame input | PS5 control |
 | --- | --- |
@@ -487,19 +515,7 @@ The following is the standard mapping reported by `pygame` for a Wireless DualSe
 
 The mapping below matches the DualSense output observed with Pygame in the active environment. Always trust the live output from `controller_test_ps5.py` if a different driver reports different numbers.
 
-### Robot controls
-
-| Controller input | Robot action |
-| --- | --- |
-| Left stick horizontal, axis 0 | Move end effector in X |
-| Left stick vertical, axis 1 | Move end effector in Y |
-| Right stick vertical, axis 3 | Move end effector in Z |
-| Button 0, Cross / X | Close gripper |
-| Button 1, Circle / O | Open gripper |
-
-The bridge applies a deadzone so small stick drift does not move the robot.
-
-### D-pad
+#### 4.1.2 D-pad
 
 The D-pad is `hat 0`, with `(x, y)` values:
 
@@ -511,7 +527,7 @@ The D-pad is `hat 0`, with `(x, y)` values:
 | `hat 0: (1, 0)` | Right |
 | `hat 0: (0, 0)` | Released |
 
-### Axes
+#### 4.1.3 Axes
 
 Typical DualSense axis numbering is:
 
@@ -538,6 +554,18 @@ python controller_test_ps5.py --duration 10 --r2-lock --r2-threshold 0.5 --rumbl
 
 `R2 LOCKED` is printed at or above the threshold and `R2 UNLOCKED` when the value falls below it. This project currently uses Pygame/SDL and does not implement DualSense adaptive-trigger resistance, so this lock is a software state with haptic feedback only.
 
+### 4.2 Robot controls
+
+| Controller input | Robot action |
+| --- | --- |
+| Left stick horizontal, axis 0 | Move end effector in X |
+| Left stick vertical, axis 1 | Move end effector in Y |
+| Right stick vertical, axis 3 | Move end effector in Z |
+| Button 0, Cross / X | Close gripper |
+| Button 1, Circle / O | Open gripper |
+
+The bridge applies a deadzone so small stick drift does not move the robot.
+
 ---
 
 ## 5. Run the Final Controlled Demo
@@ -554,6 +582,10 @@ During the final demo:
 
 The simulation is a control and vision prototype. The grasp detector is based on PyBullet contact links, so it confirms simultaneous finger contact rather than proving that the cube is physically lifted and retained under all dynamics.
 
+### 5.1 Final demonstration (recommended)
+
+#### 5.1.1 Normal demo
+
 **Use this command for the normal final demonstration:**
 
 ```bash
@@ -562,9 +594,13 @@ python vision_bridge_controlled.py --gui --controller --control-speed 0.03 --use
 
 The command opens the PyBullet GUI, mounts the robot on the table, enables the DualSense, enables the overhead camera, and stops after `--steps 3000` control cycles. The default `--steps` value is `-1` (run until `Ctrl+C` or the window is closed), so `--steps 3000` is included explicitly where a finite run is desired.
 
+#### 5.1.2 Steps flag note
+
 Stop the demo with `Ctrl+C` or close the simulation window.
 
-### Recommended diagnostic run
+### 5.2 Variants
+
+#### 5.2.1 Diagnostic run
 
 Use this when checking controller values or investigating movement:
 
@@ -574,7 +610,7 @@ python vision_bridge_controlled.py --gui --controller --debug-controller --use-o
 
 Every 30 cycles it prints the latest axis values. When a stick is moved, the corresponding axis should become significantly different from zero.
 
-### Run without the controller
+#### 5.2.2 Run without the controller
 
 The controlled bridge can also display the simulation without reading the DualSense:
 
@@ -584,13 +620,13 @@ python vision_bridge_controlled.py --gui --use-overhead --steps 1000
 
 Without `--controller`, the arm is not commanded by the joystick.
 
-### Use both cameras
+#### 5.2.3 Both cameras
 
 ```bash
 python vision_bridge_controlled.py --gui --controller --use-overhead --use-wrist --steps 3000
 ```
 
-### Save annotated camera frames
+#### 5.2.4 Save annotated frames
 
 ```bash
 python vision_bridge_controlled.py --gui --controller --use-overhead --save output --steps 3000
@@ -598,7 +634,7 @@ python vision_bridge_controlled.py --gui --controller --use-overhead --save outp
 
 Frames are saved in the `output` directory using names such as `overhead_000000.png`.
 
-### Use the segmentation detector
+#### 5.2.5 Segmentation detector
 
 ```bash
 python vision_bridge_controlled.py --gui --controller --use-overhead --detector seg --steps 3000
@@ -606,7 +642,7 @@ python vision_bridge_controlled.py --gui --controller --use-overhead --detector 
 
 The segmentation detector groups rendered pixels by PyBullet body/link ID. It is a prototype detector for testing the RGB-D and segmentation pipeline, not a general object-recognition model.
 
-### Use safe mode
+#### 5.2.6 Safe mode
 
 For slower computers or graphics-driver problems:
 
@@ -643,9 +679,9 @@ Contact feedback is event-based rather than continuous:
 
 ## 7. Speed and Control Tuning
 
-The final bridge exposes two main speed-related options.
+The final bridge exposes two main speed-related options plus base placement.
 
-### End-effector speed
+### 7.1 End-effector speed
 
 Default:
 
@@ -653,7 +689,11 @@ Default:
 --control-speed 0.012
 ```
 
-This is the Cartesian target change applied per controller update, in meters. Increase it for faster stick response:
+This is the Cartesian target change applied per controller update, in meters.
+
+#### 7.1.1 Faster response
+
+Increase it for faster stick response:
 
 ```bash
 python vision_bridge_controlled.py --gui --controller --control-speed 0.018 --steps 3000
@@ -667,13 +707,15 @@ python vision_bridge_controlled.py --gui --controller --control-speed 0.03 --phy
 
 A conservative range to try is approximately `0.008` to `0.03`.
 
+#### 7.1.2 Slower / finer control
+
 If the arm becomes difficult to control, reduce it:
 
 ```bash
 python vision_bridge_controlled.py --gui --controller --control-speed 0.006 --steps 3000
 ```
 
-### Physics steps per controller update
+### 7.2 Physics steps per controller update
 
 Default:
 
@@ -681,7 +723,13 @@ Default:
 --physics-steps 2
 ```
 
-This controls how many PyBullet physics steps run after each controller sample. Try this faster setting:
+#### 7.2.1 What it does
+
+This controls how many PyBullet physics steps run after each controller sample.
+
+#### 7.2.2 Tuning
+
+Try this faster setting:
 
 ```bash
 python vision_bridge_controlled.py --gui --controller --control-speed 0.018 --physics-steps 3 --steps 3000
@@ -689,7 +737,9 @@ python vision_bridge_controlled.py --gui --controller --control-speed 0.018 --ph
 
 Higher values advance the simulation farther per controller update. They do not necessarily make the controller more precise. If motion becomes jumpy, return to `--physics-steps 2`.
 
-### Robot base position
+### 7.3 Robot base position
+
+#### 7.3.1 Move the base
 
 The table-mounted robot X position can be changed at launch:
 
@@ -702,6 +752,8 @@ The default is `0.15`. The Y position can also be changed:
 ```bash
 python vision_bridge_controlled.py --gui --controller --robot-x 0.15 --robot-y 0.10 --steps 3000
 ```
+
+#### 7.3.2 Floor vs table
 
 The robot can be deliberately placed on the floor for comparison:
 
@@ -741,7 +793,9 @@ Use values between `0.0` and `1.0`. A driver may ignore rumble or report it as u
 
 ## 9. Troubleshooting
 
-### `conda` is not recognized on Windows
+### 9.1 Conda / environment
+
+#### 9.1.1 `conda` is not recognized on Windows
 
 If `conda --version` produces `The term 'conda' is not recognized`, the shell has not been initialized. This is expected before `conda init`. Run:
 
@@ -752,7 +806,6 @@ If `conda --version` produces `The term 'conda' is not recognized`, the shell ha
 
 Then close all PowerShell and Windows Terminal sessions and open a new PowerShell terminal. Verify with `conda --version` and `conda info --base`. If the Miniconda installation is in a different directory, adjust the path accordingly.
 
-### Wrong Conda installation is being used
 
 ```powershell
 where.exe conda
@@ -762,7 +815,17 @@ conda info --base
 
 The base should refer to the intended Miniconda installation (typically `$env:LOCALAPPDATA\miniconda3`) rather than an old Anaconda directory. If it points to an old installation, uninstall that distribution or remove its `PATH` and shell-init entries.
 
-### Wrong Python is active
+#### 9.1.2 Wrong Conda installation is being used
+
+```powershell
+where.exe conda
+Get-Command conda
+conda info --base
+```
+
+The base should refer to the intended Miniconda installation (typically `$env:LOCALAPPDATA\miniconda3`) rather than an old Anaconda directory. If it points to an old installation, uninstall that distribution or remove its `PATH` and shell-init entries.
+
+#### 9.1.3 Wrong Python is active
 
 ```powershell
 where.exe python
@@ -774,7 +837,7 @@ When `franka-haptics` is active, `python --version` should report `3.12.x` and `
 
 On macOS/Linux use `which python` / `which python3` / `conda info --envs` instead of `where.exe`.
 
-### `(base)` appears every time the terminal starts
+#### 9.1.4 `(base)` appears every time the terminal starts
 
 The `base` environment is set to auto-activate. Disable it:
 
@@ -784,7 +847,7 @@ conda config --set auto_activate_base false
 
 Restart the shell. You can still activate any environment explicitly with `conda activate franka-haptics`.
 
-### Package installed into the wrong Python
+#### 9.1.5 Package installed into the wrong Python
 
 ```bash
 python -m pip --version
@@ -798,7 +861,9 @@ python -m pip install ...
 
 over bare `pip install ...`, because `python -m pip` unambiguously uses pip from the currently active interpreter.
 
-### `No controllers found`
+### 9.2 Simulation and controller
+
+#### 9.2.1 `No controllers found`
 
 Check the following:
 
@@ -814,7 +879,7 @@ Then run:
 python controller_test_ps5.py --list
 ```
 
-### Axes print correctly but the arm does not move
+#### 9.2.2 Axes print correctly but the arm does not move
 
 Run the controlled bridge with diagnostics:
 
@@ -830,7 +895,7 @@ If movement is too small, increase the speed:
 python vision_bridge_controlled.py --gui --controller --control-speed 0.018 --steps 1000
 ```
 
-### The robot is on the floor
+#### 9.2.3 The robot is on the floor
 
 The controlled runner defaults to table mounting. Explicitly select the table:
 
@@ -840,7 +905,7 @@ python vision_bridge_controlled.py --gui --controller --robot-mount table --step
 
 Do not confuse the controlled runner with older commands that may default to floor mounting.
 
-### Rumble does not work
+#### 9.2.4 Rumble does not work
 
 First test the controller separately:
 
@@ -852,11 +917,11 @@ Press a controller button once. Some DualSense driver combinations begin respond
 
 The controller may support input while not supporting rumble through the current SDL/Pygame backend.
 
-### `maxVelocities is an invalid keyword argument`
+#### 9.2.5 `maxVelocities is an invalid keyword argument`
 
 This project intentionally does not pass `maxVelocities` to `setJointMotorControlArray`, because some installed PyBullet versions reject that keyword. Use the project dependency environment and do not add that keyword back without checking the installed PyBullet API.
 
-### OpenGL or GUI problems
+#### 9.2.6 OpenGL or GUI problems
 
 Try TinyRenderer or safe mode:
 
@@ -870,7 +935,7 @@ You can also test without the GUI:
 python vision_bridge_controlled.py --controller --tiny --steps 1000
 ```
 
-### Camera windows do not appear
+#### 9.2.7 Camera windows do not appear
 
 Use the PyBullet GUI first. OpenCV windows require a desktop session and are enabled with:
 
@@ -878,7 +943,7 @@ Use the PyBullet GUI first. OpenCV windows require a desktop session and are ena
 python vision_bridge_controlled.py --gui --use-overhead --cv2-view --steps 1000
 ```
 
-### The arm collides with cubes immediately
+#### 9.2.8 The arm collides with cubes immediately
 
 Move the table-mounted base farther from the cube workspace:
 
